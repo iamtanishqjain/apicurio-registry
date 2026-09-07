@@ -105,8 +105,15 @@ export const RoleToolbar: FunctionComponent<RoleToolbarProps> = (props: RoleTool
         props.onCriteriaChange(criteria);
     };
 
+    // A filter change starts again from the first page, so the page never points past the new results.
+    const fireFilterChangeEvent = (filterType: string, filterValue: string): void => {
+        const resetPaging: Paging = { page: 1, pageSize: paging.pageSize };
+        setPaging(resetPaging);
+        fireChangeEvent(filterAscending, filterType, filterValue, resetPaging);
+    };
+
     const onFilterSubmit = (event: any|undefined): void => {
-        fireChangeEvent(filterAscending, filterType.type, filterValue, paging);
+        fireFilterChangeEvent(filterType.type, filterValue);
         if (event) {
             event.preventDefault();
         }
@@ -116,16 +123,16 @@ export const RoleToolbar: FunctionComponent<RoleToolbarProps> = (props: RoleTool
         setFilterType(newType);
         if  (newType.type === "account") {
             setFilterValue("");
-            fireChangeEvent(filterAscending, newType.type, "", paging);
+            fireFilterChangeEvent(newType.type, "");
         } else if (newType.type === "role") {
             setRoleType(DEFAULT_ROLE_TYPE);
-            fireChangeEvent(filterAscending, newType.type, DEFAULT_ROLE_TYPE.type, paging);
+            fireFilterChangeEvent(newType.type, DEFAULT_ROLE_TYPE.type);
         }
     };
 
     const onRoleTypeChange = (roleType: RoleType): void => {
         setRoleType(roleType);
-        fireChangeEvent(filterAscending, filterType.type, roleType.type, paging);
+        fireFilterChangeEvent(filterType.type, roleType.type);
     };
 
     const onToggleAscending = (): void => {

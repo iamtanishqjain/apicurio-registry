@@ -156,10 +156,7 @@ export const RolesPage: FunctionComponent<PageProperties> = () => {
             return a.principalId!.localeCompare(b.principalId!) * direction;
         });
 
-        // Now handle pagination
-        const fromIndex: number = ((criteria?.paging.page || 1) - 1) * (criteria?.paging.pageSize || 10);
-        const toIndex: number = fromIndex + (criteria?.paging.pageSize || 10);
-        return filteredRoles.slice(fromIndex, toIndex);
+        return filteredRoles;
     };
 
     useEffect(() => {
@@ -167,6 +164,10 @@ export const RolesPage: FunctionComponent<PageProperties> = () => {
     }, []);
 
     const filteredRoles: RoleMapping[] = filterRoles();
+    // Then page the filtered results, keeping the page in range when the count shrinks.
+    const pageSize: number = criteria?.paging.pageSize || 10;
+    const page: number = Math.min(criteria?.paging.page || 1, Math.max(1, Math.ceil(filteredRoles.length / pageSize)));
+    const pagedRoles: RoleMapping[] = filteredRoles.slice((page - 1) * pageSize, page * pageSize);
 
     return (
         <PageErrorHandler error={pageError}>
@@ -180,7 +181,7 @@ export const RolesPage: FunctionComponent<PageProperties> = () => {
                     </If>
                     <If condition={roles.length > 0}>
                         <RoleToolbar roles={filteredRoles} onCriteriaChange={onCriteriaChange} onGrantAccess={onCreateRoleMapping} />
-                        <RoleList roles={filteredRoles} onRevoke={onRevokeRoleMapping}
+                        <RoleList roles={pagedRoles} onRevoke={onRevokeRoleMapping}
                             onEdit={onEditRoleMapping}></RoleList>
                     </If>
                 </PageSection>
